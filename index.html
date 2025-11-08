@@ -411,8 +411,8 @@
             <div class="instructions">
                 <p><strong>🎯 Goal:</strong> Reach the green treasure 💰!</p>
                 <p><strong>🎮 Controls:</strong> Use Arrow Keys OR tap the buttons below to move</p>
-                <p><strong>⚠️ Warning:</strong> Hitting walls OR choosing wrong paths will cost you a life!</p>
-                <p><strong>💡 Tip:</strong> You have 3 lives. Think carefully about each move!</p>
+                <p><strong>⚠️ Warning:</strong> Choosing wrong paths will cost you a life!</p>
+                <p><strong>💡 Tip:</strong> You have 3 lives. Walls block you but don't hurt you!</p>
             </div>
 
             <!-- Arrow Controls for Touch Devices -->
@@ -745,17 +745,8 @@
                 return;
             }
 
-            // Check if hitting wall
+            // Check if hitting wall - just block movement, no penalty
             if (maze[newY][newX] === 1) {
-                lifelines--;
-                updateLifelines();
-
-                if (lifelines === 0) {
-                    gameOver(false);
-                    return;
-                }
-
-                showMessage('Oops! Hit a wall! 💥', 'lose', 1500);
                 return;
             }
 
