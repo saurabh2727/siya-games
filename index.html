@@ -423,6 +423,7 @@
             <div class="game-info">
                 <div class="current-player" id="currentPlayer"></div>
                 <div class="lifelines" id="difficultyDisplay" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);"></div>
+                <div class="lifelines" id="lifelines">❤️❤️❤️ Lives: 3</div>
             </div>
 
             <div class="message" id="message"></div>
@@ -434,9 +435,10 @@
             </div>
 
             <div class="instructions">
-                <p><strong>🎯 Goal:</strong> Navigate through the maze and reach the green treasure 💰!</p>
+                <p><strong>🎯 Goal:</strong> Find the SHORTEST path to the treasure 💰!</p>
                 <p><strong>🎮 Controls:</strong> Use Arrow Keys OR tap the buttons below to move</p>
-                <p><strong>💡 Tip:</strong> Explore all paths! There may be multiple routes to victory!</p>
+                <p><strong>⚠️ Warning:</strong> Taking a longer path will cost you a life!</p>
+                <p><strong>💡 Tip:</strong> You have 3 lives. Think strategically about the shortest route!</p>
             </div>
 
             <!-- Arrow Controls for Touch Devices -->
@@ -573,6 +575,9 @@
 
         // Initialize Game
         function initGame() {
+            lifelines = 3;
+            updateLifelines();
+
             document.getElementById('currentPlayer').innerHTML = characterEmojis[selectedCharacter] + ' ' + selectedCharacter.charAt(0).toUpperCase() + selectedCharacter.slice(1);
 
             // Display difficulty level
@@ -581,6 +586,12 @@
 
             generateMaze();
             renderMaze();
+        }
+
+        // Update Lifelines
+        function updateLifelines() {
+            const hearts = '❤️'.repeat(lifelines);
+            document.getElementById('lifelines').textContent = `${hearts} Lives: ${lifelines}`;
         }
 
         // Generate Maze using recursive backtracking
@@ -789,12 +800,6 @@
             }
         }
 
-        // Update Lifelines
-        function updateLifelines() {
-            const hearts = '❤️'.repeat(lifelines);
-            document.getElementById('lifelines').textContent = `${hearts} Lives: ${lifelines}`;
-        }
-
         // Move Player
         function movePlayer(dx, dy) {
             const newX = playerPos.x + dx;
@@ -810,7 +815,21 @@
                 return;
             }
 
-            // Move player freely through any open path
+            // Check if on the shortest path
+            if (!correctPath.has(`${newX},${newY}`)) {
+                lifelines--;
+                updateLifelines();
+
+                if (lifelines === 0) {
+                    gameOver(false);
+                    return;
+                }
+
+                showMessage('❌ Not the shortest path! ❌', 'lose', 1500);
+                return;
+            }
+
+            // Move player along the correct path
             playerPos.x = newX;
             playerPos.y = newY;
 
