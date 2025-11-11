@@ -718,7 +718,46 @@
             calculateCorrectPath();
         }
 
-        // Calculate shortest path from start to end using BFS
+        // Calculate shortest distance from a given position to end using BFS
+        function calculateShortestDistance(fromX, fromY) {
+            const visited = Array(mazeSize).fill(null).map(() => Array(mazeSize).fill(false));
+            const queue = [{x: fromX, y: fromY, dist: 0}];
+            visited[fromY][fromX] = true;
+
+            const moveDirections = [
+                {dx: 1, dy: 0},  // right
+                {dx: -1, dy: 0}, // left
+                {dx: 0, dy: 1},  // down
+                {dx: 0, dy: -1}  // up
+            ];
+
+            // BFS to find shortest distance to end
+            while (queue.length > 0) {
+                const current = queue.shift();
+
+                if (current.x === endPos.x && current.y === endPos.y) {
+                    return current.dist;
+                }
+
+                for (const dir of moveDirections) {
+                    const newX = current.x + dir.dx;
+                    const newY = current.y + dir.dy;
+
+                    if (newX >= 0 && newX < mazeSize &&
+                        newY >= 0 && newY < mazeSize &&
+                        !visited[newY][newX] &&
+                        maze[newY][newX] === 0) {
+
+                        visited[newY][newX] = true;
+                        queue.push({x: newX, y: newY, dist: current.dist + 1});
+                    }
+                }
+            }
+
+            return Infinity; // No path found
+        }
+
+        // Calculate shortest path from start to end using BFS (for initial visualization)
         function calculateCorrectPath() {
             correctPath.clear();
 
@@ -766,6 +805,10 @@
                 correctPath.add(`${current.x},${current.y}`);
                 current = parent[current.y][current.x];
             }
+
+            // Debug: log correct path info
+            const totalReachable = visited.flat().filter(v => v).length;
+            console.log(`Correct path length: ${correctPath.size} cells out of ${totalReachable} reachable cells`);
         }
 
         // Handle cell click/touch for navigation
@@ -848,14 +891,23 @@
                 return;
             }
 
-            // Award points based on path choice
-            if (correctPath.has(`${newX},${newY}`)) {
-                // Optimal move - on shortest path
+            // Calculate distances to determine if this is an optimal move
+            const currentDistance = calculateShortestDistance(playerPos.x, playerPos.y);
+            const newDistance = calculateShortestDistance(newX, newY);
+
+            // Award points based on whether move brings player closer to goal
+            const isOptimalMove = newDistance < currentDistance;
+
+            if (isOptimalMove) {
+                // Optimal move - brings player closer to treasure
                 score += 10;
             } else {
-                // Exploring - valid move but not optimal
+                // Exploring - valid move but doesn't bring player closer
                 score += 5;
             }
+
+            // Debug log
+            console.log(`Move from (${playerPos.x},${playerPos.y}) to (${newX},${newY}): Distance ${currentDistance} → ${newDistance}. ${isOptimalMove ? 'Optimal (+10)' : 'Exploring (+5)'}, Total score: ${score}`);
 
             updateScore();
 
