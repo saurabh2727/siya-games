@@ -430,7 +430,7 @@
             <div class="game-info">
                 <div class="current-player" id="currentPlayer"></div>
                 <div class="lifelines" id="difficultyDisplay" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);"></div>
-                <div class="lifelines" id="lifelines">❤️❤️❤️ Lives: 3</div>
+                <div class="lifelines" id="scoreDisplay" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); color: #2d3436;">⭐ Score: 0</div>
             </div>
 
             <div class="message" id="message"></div>
@@ -442,10 +442,10 @@
             </div>
 
             <div class="instructions">
-                <p><strong>🎯 Goal:</strong> Find the SHORTEST path to the treasure 💰!</p>
+                <p><strong>🎯 Goal:</strong> Find the SHORTEST path to the treasure 💰 and earn maximum points!</p>
                 <p><strong>🎮 Controls:</strong> Use Arrow Keys, tap arrow buttons, OR tap adjacent cells to move!</p>
-                <p><strong>⚠️ Warning:</strong> Taking a longer path will cost you a life!</p>
-                <p><strong>💡 Tip:</strong> You have 3 lives. Think strategically about the shortest route!</p>
+                <p><strong>⭐ Scoring:</strong> Earn +10 points for optimal moves, +5 for exploring, +100 for finding treasure!</p>
+                <p><strong>💡 Tip:</strong> The shortest path gives you the highest score!</p>
             </div>
 
             <!-- Arrow Controls for Touch Devices -->
@@ -485,7 +485,7 @@
         let selectedDifficulty = null;
         let selectedCharacter = null;
         let currentLevel = 1;
-        let lifelines = 3;
+        let score = 0;
         let playerPos = {x: 0, y: 0};
         let endPos = {x: 0, y: 0};
         let maze = [];
@@ -582,8 +582,8 @@
 
         // Initialize Game
         function initGame() {
-            lifelines = 3;
-            updateLifelines();
+            score = 0;
+            updateScore();
 
             document.getElementById('currentPlayer').innerHTML = characterEmojis[selectedCharacter] + ' ' + selectedCharacter.charAt(0).toUpperCase() + selectedCharacter.slice(1);
 
@@ -595,10 +595,9 @@
             renderMaze();
         }
 
-        // Update Lifelines
-        function updateLifelines() {
-            const hearts = '❤️'.repeat(lifelines);
-            document.getElementById('lifelines').textContent = `${hearts} Lives: ${lifelines}`;
+        // Update Score Display
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `⭐ Score: ${score}`;
         }
 
         // Generate Maze using recursive backtracking
@@ -849,26 +848,27 @@
                 return;
             }
 
-            // Check if on the shortest path
-            if (!correctPath.has(`${newX},${newY}`)) {
-                lifelines--;
-                updateLifelines();
-
-                if (lifelines === 0) {
-                    gameOver(false);
-                    return;
-                }
-
-                showMessage('❌ Not the shortest path! ❌', 'lose', 1500);
-                return;
+            // Award points based on path choice
+            if (correctPath.has(`${newX},${newY}`)) {
+                // Optimal move - on shortest path
+                score += 10;
+                showMessage('✨ Great move! +10 points!', 'win', 800);
+            } else {
+                // Exploring - valid move but not optimal
+                score += 5;
+                showMessage('🔍 Exploring! +5 points', 'win', 800);
             }
 
-            // Move player along the correct path
+            updateScore();
+
+            // Move player
             playerPos.x = newX;
             playerPos.y = newY;
 
             // Check if reached end
             if (playerPos.x === endPos.x && playerPos.y === endPos.y) {
+                score += 100;
+                updateScore();
                 gameOver(true);
                 return;
             }
@@ -919,21 +919,12 @@
                 saveScores();
                 updateScoreDisplay();
                 updateCharacterWins();
-                showMessage('🎉 You Won! Amazing! 🎉', 'win', 3000);
+                showMessage(`🎉 You Won! Final Score: ${score} points! 🎉`, 'win', 3000);
 
                 setTimeout(() => {
-                    lifelines = 3;
-                    updateLifelines();
+                    score = 0;
+                    updateScore();
                     generateMaze();
-                    renderMaze();
-                }, 3000);
-            } else {
-                showMessage('😢 Game Over! Try Again! 😢', 'lose', 3000);
-
-                setTimeout(() => {
-                    lifelines = 3;
-                    updateLifelines();
-                    playerPos = {x: 0, y: 0};
                     renderMaze();
                 }, 3000);
             }
@@ -941,8 +932,8 @@
 
         // New Maze Button
         document.getElementById('newMaze').addEventListener('click', function() {
-            lifelines = 3;
-            updateLifelines();
+            score = 0;
+            updateScore();
             generateMaze();
             renderMaze();
             showMessage('🔄 New Maze Generated! 🔄', 'win', 1500);
