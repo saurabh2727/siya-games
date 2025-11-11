@@ -852,11 +852,9 @@
             if (correctPath.has(`${newX},${newY}`)) {
                 // Optimal move - on shortest path
                 score += 10;
-                showMessage('✨ Great move! +10 points!', 'win', 800);
             } else {
                 // Exploring - valid move but not optimal
                 score += 5;
-                showMessage('🔍 Exploring! +5 points', 'win', 800);
             }
 
             updateScore();
